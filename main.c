@@ -31,18 +31,32 @@ int ft_strlen(char *str)
 
 int comp_global(int * input, int * tab)
 {
-    int line_ck;
-    int col_ck;
-
-    line_ck = comp_line(tab, input, 0);
-    col_ck = col(tab, input);
-    if (line_ck == 1 && col_ck == 1)
+    int *line_ck;
+    int *col_ck;
+    
+    col_ck = col(tab, input, 0);
+    line_ck = comp_line(tab, input, 0, 8);
+    if (tab_check(col_ck, line_ck) == 1)
         return (1);
     else
         return (0);
 }
 
-int comp_line(int * tab, int * input, int diff)
+int tab_check(int *col_ck, int *line_ck)
+{
+    int i;
+
+    i = 0;
+    while (i < 4)
+    {
+        if (col_ck[i] == 0 || line_ck[i] == 0)
+            return (0);
+        i++;
+    }
+    return (1);
+}
+
+int *comp_line(int * tab, int * input, int diff, int placement_tableau)
 {
     int index;
     int j;
@@ -50,6 +64,7 @@ int comp_line(int * tab, int * input, int diff)
     int max;
     int countleft;
     int countright;
+    int * flag_entry[8];
 
     max = 0;
     min = 0;
@@ -57,6 +72,7 @@ int comp_line(int * tab, int * input, int diff)
     countright = 0;
     index = 0;
     j = 0;
+
     while (j < 4)
     {
         while (index < 4)
@@ -71,12 +87,27 @@ int comp_line(int * tab, int * input, int diff)
                 min = tab[3 - index][j];
                 countright++;
             }
+            flag_entry[placement_tableau] = comp_input_count(diff, countleft, countright, input, index);
+            index++;
+            placement_tableau++;
         }
-            
     }
+    return (flag_entry);
 }
 
-int col(int * tab, int * input)
+int comp_input_count(int diff, int countleft, int countright, int *input, int index)
+{
+    int ret;
+
+    if (diff == 0)
+        index = index + 8;
+    if (input[index] == countleft && input[index + 4] == countright)
+        return (1);
+    else
+        return (0);
+}
+
+int *col(int * tab, int * input, int placement_tableau)
 {
     int *col[4][4];
     int i;
@@ -93,7 +124,15 @@ int col(int * tab, int * input)
         }
         i++;
     }
-    return (comp_line(col, input, 1))
+    if (col[i][0] == col[i][1] ||
+        col[i][0] == col[i][2] ||
+        col[i][0] == col[i][3] ||
+        col[i][1] == col[i][2] ||
+        col[i][1] == col[i][3] ||
+        col[i][2] == col[i][3])
+        return (0);
+    else
+        return (comp_line(col, input, 1, 0));
 }
 
 void    ft_putstr(char *str)
@@ -106,18 +145,45 @@ int check(int index, int * possibilite, int * input)
 {
     int i;
     int result;
+    int *tab[4][4];
 
     i = 0;
     if (index == 4)
     {
         result = comp_global(input, tab);
     }
-    while (i < 24)
+    if (result == 1)
+        print_result(tab);
+    else
     {
-        int *tab[index] = possibilite[i];
-        if (check(index + 1, possibilite, input) == 1)
-            return (1);
-        i++;
+        while (i < 24)
+        {
+            tab[index] = possibilite[i];
+            if (check(index + 1, possibilite, input) == 1)
+               return (1);
+            i++;
+        }
+    }
+}
+
+void    print_void(int *tab)
+{
+    int i;
+    int j;
+
+    j = 0;
+    while (j < 4)
+    {
+        i = 0;
+        while (i < 4)
+        {
+            ft_putchar(tab[i][j] + '0');
+            if (i < 3)
+                ft_putchar(' ');
+            i++;
+        }
+        ft_putchar('\n');
+        j++
     }
 }
 
